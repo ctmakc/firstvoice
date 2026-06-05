@@ -4,17 +4,112 @@
 
 | # | Program | Deadline | Amount | Status |
 |---|---------|----------|--------|--------|
-| 1 | SSHRC Insight Development | Rolling | $50K–$150K | 📝 Draft |
-| 2 | Canadian Heritage ILP 2026-27 | Fall 2026 | $100K–$500K | ⏳ Research |
-| 3 | First Nations Tech Council | Rolling | $50K–$200K | ⏳ Research |
-| 4 | Te Taura Whiri i te Reo Māori | Annual | NZ$50K–$300K | ⏳ Research |
-| 5 | Filecoin Dev Grants | Rolling | $5K–$50K | 📝 Draft |
-| 6 | Gitcoin Grants Round | Quarterly | $10K–$100K | ⏳ Research |
-| 7 | Protocol Labs (IPFS) | Rolling | $10K–$100K | ⏳ Research |
+| 1 | **Te Mātāwai** (NZ) | 28 Feb 2026 | NZ$60K–$100K | 📝 **Ready to submit** |
+| 2 | **MBIE He Ara Whakahihiko** (NZ) | 8 Oct 2025 (next: 2027) | NZ$100K | 📝 Ready |
+| 3 | SSHRC Insight Development (CA) | Rolling | $50K–$150K | 📝 Draft |
+| 4 | Canadian Heritage ILP 2026-27 | Fall 2026 | $100K–$500K | ⏳ Research |
+| 5 | First Nations Tech Council (CA) | Rolling | $50K–$200K | ⏳ Research |
+| 6 | Filecoin Dev Grants | Rolling | $5K–$50K | 📝 Draft |
+| 7 | Gitcoin Grants Round | Quarterly | $10K–$100K | ⏳ Research |
+| 8 | Protocol Labs (IPFS) | Rolling | $10K–$100K | ⏳ Research |
 
 ---
 
-## SSHRC Insight Development — Draft Narrative
+## 🇳🇿 Priority: Te Mātāwai — 2026-2027 Investment Round
+
+**Status:** 📝 Ready to submit (deadline 28 Feb 2026)
+**Amount:** NZ$60,000–$100,000
+**Duration:** 12 months (commencing 1 July 2026)
+**Contact:** Te Mātāwai Investment Team
+
+### Why FirstVoice Fits
+Te Mātāwai funds projects that support:
+- **Tukuihotanga** — Deliberate intergenerational transmission
+- **Hononga Hapori Reo** — Connected Māori language communities
+
+FirstVoice directly addresses both by creating a community-controlled digital space where elders can record, archive, and transmit te reo Māori stories — with sacred governance ensuring cultural protocols are technically enforced, not just documented.
+
+### Proposal Title
+**"FirstVoice Aotearoa: Community-Controlled Digital Heritage for Te Reo Māori Revitalisation"**
+
+### Project Summary (150 words)
+FirstVoice Aotearoa will establish a Māori-led digital heritage platform that returns data sovereignty to iwi, hapū, and whānau. Using AI speech technology (fine-tuned ASR/TTS for te reo Māori), Web3 provenance (tamper-proof attribution), and sacred governance (community-controlled visibility), the platform enables elders to record stories in te reo, have them transcribed and translated, and decide — community by community, story by story — what is public, what is sacred, and whether AI may learn from their voice.
+
+Unlike existing archives that extract data without consent, FirstVoice is OCAP-by-design: Ownership, Control, Access, and Possession are technical guarantees, not policy statements. The 12-month pilot will co-design the platform with two Māori communities, deliver a production-ready system, and publish all technology as open-source (AGPL-3.0).
+
+### Community Partners (TBD — to be confirmed before submission)
+- [ ] Ngāti Porou or Te Whānau-ā-Apanui (East Coast)
+- [ ] Waikato-Tainui or Ngāi Tahu (to be approached)
+
+### Budget (NZD)
+| Item | Amount | Notes |
+|------|--------|-------|
+| Community co-design (2 communities, 6 months each) | $25,000 | Facilitation, travel, hui |
+| AI/ML development (te reo fine-tuning) | $20,000 | Whisper ASR + Coqui TTS adaptation |
+| Platform development (Full-stack engineer) | $25,000 | 6 months part-time |
+| Cloud infrastructure + storage | $8,000 | AWS/DO + MinIO + Polygon |
+| Project management + reporting | $7,000 | |
+| Open-source release + documentation | $5,000 | |
+| **Total** | **$90,000** | |
+
+### Deliverables
+1. **MVP Platform** — Recording, transcription, translation, elder approval workflow
+2. **Te Reo AI Models** — Fine-tuned ASR achieving >70% WER on 10h test set
+3. **2 Community Pilots** — 50+ recordings, community council governance active
+4. **Open Source Release** — AGPL code + documented API + deployment guide
+5. **Evaluation Report** — Participation metrics, linguistic accuracy, trust survey
+
+### Alignment with Te Mātāwai Priorities
+| Priority | How FirstVoice Delivers |
+|----------|------------------------|
+| **Tukuihotanga** | Elders record stories → youth access transcribed/translated versions → intergenerational transmission loop |
+| **Hononga Hapori Reo** | Community councils control visibility → trusted space → higher participation |
+| **Data Sovereignty** | OCAP-by-design architecture → communities own their data, not the platform |
+
+### Letters of Support Required
+- [ ] Iwi/hapū endorsement (from each pilot community)
+- [ ] Marae committee approval for digital archiving
+- [ ] Māori linguist advisor confirmation
+
+---
+
+## 🇳🇿 MBIE He Ara Whakahihiko — Ara Whaihua (Innovation)
+
+**Status:** 📝 Ready (next round opens ~August 2026 for 2027 start)
+**Amount:** Up to NZ$100,000
+**Duration:** 12 months
+**Theme:** Vision Mātauranga — Indigenous Innovation
+
+### Proposal Title
+**"FirstVoice: AI-Native Digital Heritage Infrastructure for Low-Resource Indigenous Languages"**
+
+### Science/Technology Case
+FirstVoice applies cutting-edge AI speech technology to one of the world's most challenging NLP problems: **ultra-low-resource language preservation**. Standard Whisper ASR achieves <30% accuracy on Indigenous languages with <10 hours of training data. Our research hypothesis is that fine-tuning with:
+1. **Curriculum learning** (sacred → community-review → public)
+2. **Cross-lingual transfer** (English/Māori bilingual prompts)
+3. **Community-validated ground truth** (elder-approved transcriptions as gold standard)
+
+...can push ASR accuracy above 70% WER and enable practical community use.
+
+### Innovation Claims
+1. **First** platform to combine OCAP governance with technical enforcement
+2. **First** use of Soulbound NFTs for non-speculative cultural provenance
+3. **First** open-source ASR/TTS pipeline designed for Indigenous community control
+
+### Budget (NZD)
+| Item | Amount |
+|------|--------|
+| Research engineer (AI/ML) | $35,000 |
+| Community validation (transcription gold standard) | $15,000 |
+| Compute (GPU fine-tuning + inference) | $12,000 |
+| Platform engineering | $20,000 |
+| Evaluation + publication | $8,000 |
+| Project management | $10,000 |
+| **Total** | **$100,000** |
+
+---
+
+## 🇨🇦 SSHRC Insight Development — Draft Narrative
 
 ### Title
 **FirstVoice: An AI-Native, Community-Controlled Digital Heritage Platform for Indigenous Language Revitalization**
@@ -49,61 +144,47 @@ Over 70 Indigenous languages in Canada are critically endangered. Existing digit
 
 ---
 
-## Canadian Heritage ILP — Draft Narrative
+## 🌐 Web3 Grants
 
-### Alignment
-ILP Priority: **Technology and innovation to support Indigenous language revitalization**
+### Filecoin Dev Grants
+**Fit:** Decentralized storage layer for audio archives  
+**Amount:** $5K–$50K  
+**Pitch:** Use Filecoin/IPFS for redundant, censorship-resistant storage of public-domain Indigenous recordings. Community-controlled encryption keys for sacred content.
 
-### Key Messages
-- FirstVoice is **not an archive** — it is a **living platform** where communities control their own data
-- AI voice cloning allows **language learning even with few fluent speakers**
-- Open-source release ensures **no vendor lock-in** and **national scalability**
+### Gitcoin Grants
+**Fit:** Open-source public good  
+**Amount:** $10K–$100K (quadratic matching)  
+**Pitch:** AGPL-3.0 platform with no paywalls. All code open. Community-driven roadmap.
 
-### Deliverables
-1. Functional platform in 3 Indigenous languages
-2. AI TTS voices for each (type-to-speak)
-3. Open-source codebase + documentation
-4. Train-the-trainer manual for community admins
-5. Evaluation report on participation + learning outcomes
-
----
-
-## Filecoin Dev Grants — Draft
-
-### Proposal
-**Decentralized, Long-Term Storage for Indigenous Oral Histories**
-
-### Technical Plan
-- Public recordings: IPFS pinning + Filecoin deals for 100-year persistence
-- Sacred recordings: Encrypted at rest, encrypted Filecoin deals (community holds keys)
-- Content-addressing ensures **tamper-proof provenance** — if a file changes, its CID changes
-
-### Milestones
-1. Integrate IPFS node into backend storage layer
-2. Implement encryption pipeline for sacred content
-3. Filecoin deal automation (via Boost or Singularity)
-4. Community backup dashboard ("Your data is stored in X locations")
+### Protocol Labs (IPFS)
+**Fit:** Decentralized knowledge preservation  
+**Amount:** $10K–$100K  
+**Pitch:** IPFS content-addressing ensures recordings cannot be "lost" even if platform shuts down. Permanent URLs for cultural heritage.
 
 ---
 
-## Gitcoin Grants — Draft
+## 📝 Submission Checklist
 
-### Pitch
-FirstVoice is an **open-source public good** returning data sovereignty to endangered-language communities. Every dollar funds:
-- Free hosting for communities without IT infrastructure
-- AI model training for languages Big Tech ignores
-- Web3 provenance that can never be censored or deleted
+### Te Mātāwai (Due 28 Feb 2026)
+- [ ] Register on Te Mātāwai portal (by 31 Jan 2026)
+- [ ] Confirm community partners + letters of support
+- [ ] Finalise budget
+- [ ] Submit business case in te reo Māori or English (depending on Kāhui)
+- [ ] Attach proof of registration (Companies Office / Charities)
+- [ ] Attach bank verification + 2 character references
 
-### Funding Ask
-$25,000 for 6 months of development + 2 community pilots.
+### MBIE He Ara Whakahihiko (Due ~Oct 2026)
+- [ ] Confirm Māori-facing organisation status
+- [ ] Draft Vision Mātauranga statement
+- [ ] Secure research partner (university or CRI)
+- [ ] Prepare science case + commercialisation pathway
+
+### SSHRC (Rolling)
+- [ ] Identify SSHRC-eligible institution (university affiliation required)
+- [ ] Draft full application (8 pages)
+- [ ] Secure Indigenous community letters of support
+- [ ] Prepare budget + timeline
 
 ---
 
-## Next Actions
-
-- [ ] Recruit Indigenous advisor (First Nations Tech Council, local Friendship Centre)
-- [ ] Confirm pilot community (target: Cree or Ojibwe in Ontario/Manitoba)
-- [ ] Draft SSHRC application (fall deadline)
-- [ ] Create GitHub org repo (public, AGPL)
-- [ ] Build 60-second pitch video for grant demos
-- [ ] Register for Canadian Heritage ILP info session
+*Last updated: 2026-06-05*
