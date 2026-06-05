@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FirstVoice — Pitch Deck</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --text: #f0f0f0;
+      --muted: #999;
+      --accent: #d4a853;
+      --danger: #c44;
+      --success: #3a3;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      scroll-snap-type: y mandatory;
+      overflow-y: scroll;
+    }
+    section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      scroll-snap-align: start;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    h1 { font-size: 3rem; font-weight: 700; margin-bottom: 1rem; }
+    h2 { font-size: 2rem; font-weight: 600; margin-bottom: 1rem; }
+    p { color: var(--muted); font-size: 1.1rem; max-width: 600px; }
+    .big-number {
+      font-size: 4rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 800px;
+      margin-top: 2rem;
+    }
+    .card {
+      background: var(--surface);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      border: 1px solid #2a2a2a;
+    }
+    .card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .card p { font-size: 0.9rem; }
+    .pill {
+      display: inline-block;
+      background: rgba(212,168,83,0.1);
+      color: var(--accent);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+    .cta {
+      display: inline-block;
+      margin-top: 2rem;
+      padding: 0.875rem 1.75rem;
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 600;
+      border-radius: var(--radius);
+      text-decoration: none;
+    }
+    table {
+      width: 100%;
+      max-width: 700px;
+      margin-top: 1.5rem;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    th { color: var(--accent); font-weight: 500; }
+    td { color: var(--muted); }
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+      max-width: 700px;
+      margin-top: 1.5rem;
+      text-align: left;
+    }
+    .timeline-item {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .timeline-month {
+      background: var(--accent);
+      color: var(--bg);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      flex-shrink: 0;
+      min-width: 80px;
+      text-align: center;
+    }
+    .timeline-content {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+
+<section>
+  <div class="pill">Grant Pitch Deck · June 2026</div>
+  <h1>FirstVoice</h1>
+  <p style="font-size: 1.25rem;">
+    Community-Controlled Digital Heritage. AI speech technology, Web3 provenance,
+    and sacred governance — returning data sovereignty to Indigenous communities.
+  </p>
+  <a href="https://github.com/ctmakc/firstvoice" class="cta">⭐ View on GitHub</a>
+</section>
+
+<section>
+  <h2>The Crisis</h2>
+  <div class="grid">
+    <div class="card">
+      <div class="big-number">40%</div>
+      <p>of the world's ~7,000 languages are critically endangered</p>
+    </div>
+    <div class="card">
+      <div class="big-number">1</div>
+      <p>language dies every 2 weeks</p>
+    </div>
+    <div class="card">
+      <div class="big-number">0</div>
+      <p>existing platforms enforce OCAP by design</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>The Solution</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>🎙️ Record</h3>
+      <p>Elders record stories in-browser. Offline-first PWA — works on any phone without app install.</p>
+    </div>
+    <div class="card">
+      <h3>🧠 Understand</h3>
+      <p>AI transcribes in the source language and translates with cultural annotations. Whisper + Gemini.</p>
+    </div>
+    <div class="card">
+      <h3>🔒 Govern</h3>
+      <p>Community council decides: public, sacred, or restricted. AI training gated per-item. Blockchain provenance.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>OCAP-by-Design</h2>
+  <p>Ownership, Control, Access, Possession — not policy documents, but technical guarantees.</p>
+  <table>
+    <tr>
+      <th>Principle</th>
+      <th>Technical Enforcement</th>
+    </tr>
+    <tr>
+      <td>Ownership</td>
+      <td>Communities hold encryption keys for sacred recordings</td>
+    </tr>
+    <tr>
+      <td>Control</td>
+      <td>Per-recording visibility: Sacred / Community-Review / Public</td>
+    </tr>
+    <tr>
+      <td>Access</td>
+      <td>Elder key authentication — council members only</td>
+    </tr>
+    <tr>
+      <td>Possession</td>
+      <td>Self-hostable MinIO — data stays in community jurisdiction</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>12-Month Pilot Plan</h2>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-month">Month 1-2</div>
+      <div class="timeline-content">Community hui + co-design with 2 Māori communities. Signed partnership agreements.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-month">Month 3-4</div>
+      <div class="timeline-content">Platform localisation (te reo UI + cultural metadata). Elder training workshops.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-month">Month 5-6</div>
+      <div class="timeline-content">Recording workshops. 50+ stories uploaded. Community council governance active.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-month">Month 7-8</div>
+      <div class="timeline-content">AI fine-tuning on community-validated transcripts. Target: >70% ASR accuracy.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-month">Month 9-10</div>
+      <div class="timeline-content">Community review + iteration. Feedback incorporated into platform.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-month">Month 11-12</div>
+      <div class="timeline-content">Open-source release (AGPL). Evaluation report. Conference presentation.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Budget</h2>
+  <table>
+    <tr>
+      <th>Item</th>
+      <th>Amount (NZD)</th>
+    </tr>
+    <tr>
+      <td>Community co-design (2 communities)</td>
+      <td>$25,000</td>
+    </tr>
+    <tr>
+      <td>AI/ML development (te reo fine-tuning)</td>
+      <td>$20,000</td>
+    </tr>
+    <tr>
+      <td>Platform engineering</td>
+      <td>$25,000</td>
+    </tr>
+    <tr>
+      <td>Cloud infrastructure + storage</td>
+      <td>$8,000</td>
+    </tr>
+    <tr>
+      <td>Project management</td>
+      <td>$7,000</td>
+    </tr>
+    <tr>
+      <td>Open-source release</td>
+      <td>$5,000</td>
+    </tr>
+    <tr>
+      <td><strong>Total</strong></td>
+      <td><strong>$90,000</strong></td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Team</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Maksym Stepanenko</h3>
+      <p>Technologist / Lead. Full-stack + AI/ML (10+ years). Builder of 30+ production systems.</p>
+    </div>
+    <div class="card">
+      <h3>Māori Advisor</h3>
+      <p>[Recruiting] Iwi liaison + cultural protocol expert.</p>
+    </div>
+    <div class="card">
+      <h3>Computational Linguist</h3>
+      <p>[Recruiting] Te reo Māori NLP + ASR expertise.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Contact</h2>
+  <p style="font-size: 1.2rem; margin-bottom: 1rem;">
+    📧 maksym@firstvoice.dev<br>
+    🔗 github.com/ctmakc/firstvoice<br>
+    🌐 https://national-introductory-customs-started.trycloudflare.com
+  </p>
+  <div class="pill">AGPL-3.0 · Open Source · No Paywalls</div>
+  <p style="margin-top: 2rem; font-size: 0.9rem; color: var(--muted);">
+    Built with respect for the voices that came before us.
+  </p>
+</section>
+
+</body>
+</html>

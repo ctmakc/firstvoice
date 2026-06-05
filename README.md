@@ -9,8 +9,13 @@
 - **Web App:** https://national-introductory-customs-started.trycloudflare.com (public demo)
 - **API Docs:** https://gradually-reviews-damages-aberdeen.trycloudflare.com/docs (Swagger UI)
 - **Landing Page:** https://national-introductory-customs-started.trycloudflare.com/landing
+- **Pitch Deck:** Open `docs/PITCH.html` in a browser for a scrollable presentation
 
-> ⚠️ These are temporary Cloudflare tunnel URLs for demo purposes. For a permanent deployment, we need MATIC for Polygon Amoy testnet + VPS hosting.
+> ⚠️ These are temporary Cloudflare tunnel URLs for demo purposes. For permanent deployment:
+> ```bash
+> # One-command production deploy (requires SSH access to a VPS)
+> ./scripts/deploy.sh root@your-server.com firstvoice.dev
+> ```
 
 **Demo Elder Keys** (for login at `/login`):
 - Cree: `8MnDY-TIm8Lp8uafw1cP1Zj0MFgYDn-spNHa4oAM9nE`
@@ -119,11 +124,19 @@ firstvoice/
 │       │   └── hooks/            # useAuth, useApi
 │       └── public/               # PWA manifest, service worker
 ├── infra/
-│   └── docker-compose.yml  # One-command full stack
+│   ├── docker-compose.yml      # Local dev stack
+│   ├── docker-compose.prod.yml # Production stack (Caddy + SSL)
+│   └── Caddyfile             # Reverse proxy config
 ├── docs/
 │   ├── PRD.md              # Product Requirements Document
 │   ├── BUILD.md            # Technical Architecture
-│   └── GRANTS.md           # Grant templates & tracker
+│   ├── GRANTS.md           # Grant templates & tracker
+│   ├── ONE_PAGER.md        # One-page grant summary
+│   ├── OUTREACH.md         # Māori community partner contacts
+│   ├── PITCH.html          # Scrollable pitch deck
+│   └── SOCIAL_KIT.md       # LinkedIn/Twitter/HN launch posts
+├── scripts/
+│   └── deploy.sh           # One-command VPS deploy
 └── .github/workflows/      # CI/CD
 ```
 
