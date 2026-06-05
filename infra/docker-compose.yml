@@ -1,0 +1,116 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: firstvoice
+      POSTGRES_USER: fv
+      POSTGRES_PASSWORD: devpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fv -d firstvoice"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: firstvoice
+      MINIO_ROOT_PASSWORD: devpass123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: ../apps/api
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql+asyncpg://fv:devpass@postgres:5432/firstvoice
+      SYNC_DATABASE_URL: postgresql://fv:devpass@postgres:5432/firstvoice
+      REDIS_URL: redis://redis:6379/0
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: firstvoice
+      MINIO_SECRET_KEY: devpass123
+      MINIO_BUCKET: recordings
+      MINIO_SECURE: "false"
+      NEXTAUTH_URL: http://localhost:3050
+    ports:
+      - "8010:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - whisper_models:/app/models
+      - ../apps/api/src:/app/src
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  web:
+    build: ../apps/web
+    environment:
+      NEXTAUTH_SECRET: change-me-in-production-32-char-secret
+      NEXTAUTH_URL: http://localhost:3050
+      API_URL: http://api:8000
+    ports:
+      - "3050:3000"
+    depends_on:
+      - api
+    volumes:
+      - ../apps/web/src:/app/src
+      - ../apps/web/public:/app/public
+    command: npm run dev
+
+  worker:
+    build: ../apps/api
+    command: celery -A src.celery_app worker --loglevel=info --concurrency=2
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql+asyncpg://fv:devpass@postgres:5432/firstvoice
+      SYNC_DATABASE_URL: postgresql://fv:devpass@postgres:5432/firstvoice
+      REDIS_URL: redis://redis:6379/0
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: firstvoice
+      MINIO_SECRET_KEY: devpass123
+      MINIO_BUCKET: recordings
+      MINIO_SECURE: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - whisper_models:/app/models
+      - /dev/shm:/dev/shm
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+volumes:
+  postgres_data:
+  minio_data:
+  whisper_models:

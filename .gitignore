@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Next.js
+.next/
+out/
+*.log
+
+# Python
+*.egg-info/
+dist/
+build/
+
+# Env
+.env
+.env.local
+.env.production
+
+# Docker
+postgres_data/
+minio_data/
+whisper_models/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Audio / media (large files)
+*.wav
+*.mp3
+*.webm
+*.mp4
+*.m4a
