@@ -6,11 +6,13 @@
 
 ## 🎬 Live Demo
 
-- **Web App:** http://localhost:3001 (local dev)
-- **API Docs:** http://localhost:8001/docs (Swagger UI)
-- **Landing Page:** http://localhost:3001/landing
+- **Web App:** https://national-introductory-customs-started.trycloudflare.com (public demo)
+- **API Docs:** https://gradually-reviews-damages-aberdeen.trycloudflare.com/docs (Swagger UI)
+- **Landing Page:** https://national-introductory-customs-started.trycloudflare.com/landing
 
-**Demo Elder Keys** (for login):
+> ⚠️ These are temporary Cloudflare tunnel URLs for demo purposes. For a permanent deployment, we need MATIC for Polygon Amoy testnet + VPS hosting.
+
+**Demo Elder Keys** (for login at `/login`):
 - Cree: `8MnDY-TIm8Lp8uafw1cP1Zj0MFgYDn-spNHa4oAM9nE`
 - Inuktitut: `mRrmXoowyG-bCR2YTGyqVj_SGUC0BrxYgMnoeZs5V7Q`
 - Ojibwe: `2mokRpg7dLSnZ8rHfPJ4HuqK-9hJglJI_NBqxJ5kQmY`
