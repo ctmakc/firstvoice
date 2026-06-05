@@ -1,12 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select, and_
 from src.database import get_db
 from src.models.schemas import RecordingCreate, RecordingRead, RecordingUpdate
 from src.models.db_models import Recording, AuditLog, User
+from src.middleware.auth import get_current_user, get_current_user_optional
+from src.middleware.policy import require_recording_access
+from src.services.storage import upload_audio
 from src.config import get_settings
 import uuid
 import json
+import io
 from typing import List, Optional
 
 router = APIRouter()
@@ -22,21 +26,28 @@ async def create_recording(
     visibility: str = Form("sacred"),
     ai_training_allowed: bool = Form(False),
     speaker_name: Optional[str] = Form(None),
-    location: Optional[str] = Form(None),  # JSON string
+    location: Optional[str] = Form(None),
     audio: UploadFile = File(...),
-    uploaded_by: uuid.UUID = Form(...),  # TODO: from JWT
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    """Upload audio and create recording record. Enqueues transcription job."""
-    # TODO: upload to MinIO
-    audio_file_key = f"recordings/{community_id}/{uuid.uuid4()}.{audio.filename.split('.')[-1]}"
+    ext = audio.filename.split(".")[-1] if audio.filename and "." in audio.filename else "webm"
+    audio_file_key = f"recordings/{community_id}/{uuid.uuid4()}.{ext}"
+
+    content = await audio.read()
+    upload_audio(
+        audio_file_key,
+        io.BytesIO(content),
+        len(content),
+        content_type=audio.content_type or "audio/webm",
+    )
 
     loc = json.loads(location) if location else None
 
     recording = Recording(
         id=uuid.uuid4(),
         community_id=community_id,
-        uploaded_by=uploaded_by,
+        uploaded_by=current_user.id,
         audio_file_key=audio_file_key,
         language=language,
         title=title,
@@ -49,11 +60,10 @@ async def create_recording(
     )
     db.add(recording)
 
-    # Audit log
     audit = AuditLog(
         id=uuid.uuid4(),
         recording_id=recording.id,
-        user_id=uploaded_by,
+        user_id=current_user.id,
         action="upload",
         new_value={"visibility": visibility, "language": language},
     )
@@ -61,8 +71,6 @@ async def create_recording(
 
     await db.commit()
     await db.refresh(recording)
-
-    # TODO: enqueue Celery transcription task
     return recording
 
 
@@ -72,10 +80,8 @@ async def list_recordings(
     visibility: Optional[str] = None,
     language: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
-    """List recordings filtered by community, visibility, language.
-    Sacred recordings excluded from public API unless user is community member.
-    """
     query = select(Recording)
     filters = []
 
@@ -86,8 +92,17 @@ async def list_recordings(
     if visibility:
         filters.append(Recording.visibility == visibility)
     else:
-        # Default: exclude sacred unless explicitly requested by authorized user
-        filters.append(Recording.visibility != "sacred")
+        can_view_sacred = False
+        if community_id and current_user:
+            if current_user.role == "superadmin":
+                can_view_sacred = True
+            elif (
+                current_user.community_id == community_id
+                and current_user.role in ("elder", "admin", "superadmin")
+            ):
+                can_view_sacred = True
+        if not can_view_sacred:
+            filters.append(Recording.visibility != "sacred")
 
     if filters:
         query = query.where(and_(*filters))
@@ -98,13 +113,8 @@ async def list_recordings(
 
 @router.get("/{recording_id}", response_model=RecordingRead)
 async def get_recording(
-    recording_id: uuid.UUID,
-    db: AsyncSession = Depends(get_db),
+    recording: Recording = Depends(require_recording_access),
 ):
-    result = await db.execute(select(Recording).where(Recording.id == recording_id))
-    recording = result.scalar_one_or_none()
-    if not recording:
-        raise HTTPException(status_code=404, detail="Recording not found")
     return recording
 
 
@@ -112,19 +122,14 @@ async def get_recording(
 async def update_recording(
     recording_id: uuid.UUID,
     data: RecordingUpdate,
-    user_id: uuid.UUID,  # TODO: from JWT
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    recording: Recording = Depends(require_recording_access),
 ):
-    result = await db.execute(select(Recording).where(Recording.id == recording_id))
-    recording = result.scalar_one_or_none()
-    if not recording:
-        raise HTTPException(status_code=404, detail="Recording not found")
-
-    # Check user is elder/admin of this community
-    user_result = await db.execute(select(User).where(User.id == user_id))
-    user = user_result.scalar_one_or_none()
-    if not user or user.role not in ("elder", "admin", "superadmin"):
+    if current_user.role not in ("elder", "admin", "superadmin"):
         raise HTTPException(status_code=403, detail="Insufficient privileges")
+    if current_user.role != "superadmin" and current_user.community_id != recording.community_id:
+        raise HTTPException(status_code=403, detail="Not authorized for this community")
 
     old_value = {}
     new_value = {}
@@ -144,11 +149,20 @@ async def update_recording(
         recording.ai_training_allowed = data.ai_training_allowed
         new_value["ai_training_allowed"] = data.ai_training_allowed
 
-    # Audit log
+    if data.transcript is not None:
+        old_value["transcript"] = recording.transcript
+        recording.transcript = data.transcript
+        new_value["transcript"] = data.transcript
+
+    if data.speaker_consent is not None:
+        old_value["speaker_consent"] = recording.speaker_consent
+        recording.speaker_consent = data.speaker_consent
+        new_value["speaker_consent"] = data.speaker_consent
+
     audit = AuditLog(
         id=uuid.uuid4(),
         recording_id=recording.id,
-        user_id=user_id,
+        user_id=current_user.id,
         action="visibility_change",
         old_value=old_value or None,
         new_value=new_value or None,
