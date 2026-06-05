@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import Nav from "@/components/Nav";
 
 export const metadata: Metadata = {
   title: "FirstVoice — Community-Controlled Heritage",
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
     "oral history",
     "data sovereignty",
   ],
+  manifest: "/manifest.json",
 };
 
 export const viewport: Viewport = {
@@ -28,7 +30,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                  navigator.serviceWorker.register('/sw.js').catch(console.error);
+                });
+              }
+            `,
+          }}
+        />
+      </head>
+      <body style={{ paddingBottom: "4.5rem" }}>
+        {children}
+        <Nav />
+      </body>
     </html>
   );
 }

@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: firstvoice_test
+          POSTGRES_USER: fv
+          POSTGRES_PASSWORD: devpass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+      minio:
+        image: minio/minio:latest
+        env:
+          MINIO_ROOT_USER: firstvoice
+          MINIO_ROOT_PASSWORD: devpass123
+        ports:
+          - 9000:9000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python deps
+        run: |
+          cd apps/api
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
+
+      - name: Lint with Ruff
+        run: |
+          cd apps/api
+          pip install ruff
+          ruff check .
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: postgresql+asyncpg://fv:devpass@localhost:5432/firstvoice_test
+          SYNC_DATABASE_URL: postgresql://fv:devpass@localhost:5432/firstvoice_test
+        run: |
+          cd apps/api
+          alembic upgrade head
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql+asyncpg://fv:devpass@localhost:5432/firstvoice_test
+          SYNC_DATABASE_URL: postgresql://fv:devpass@localhost:5432/firstvoice_test
+          REDIS_URL: redis://localhost:6379/0
+          MINIO_ENDPOINT: localhost:9000
+        run: |
+          cd apps/api
+          pytest -v --tb=short
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Node deps
+        run: |
+          cd apps/web
+          npm install --legacy-peer-deps
+
+      - name: Lint
+        run: |
+          cd apps/web
+          npm run lint
+
+      - name: Type check
+        run: |
+          cd apps/web
+          npm run typecheck
+
+      - name: Build
+        run: |
+          cd apps/web
+          npm run build

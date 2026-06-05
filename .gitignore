@@ -26,6 +26,12 @@ postgres_data/
 minio_data/
 whisper_models/
 
+# Contracts
+contracts/node_modules/
+contracts/cache/
+contracts/artifacts/
+contracts/typechain-types/
+
 # IDE
 .vscode/
 .idea/
