@@ -1,21 +1,76 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+
+const DB_NAME = "firstvoice-offline";
+const STORE_NAME = "recordings-queue";
+
+function openDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onerror = () => reject(req.error);
+    req.onsuccess = () => resolve(req.result);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
+    };
+  });
+}
+
+async function queueOffline(data: { blob: Blob; form: Record<string, string> }) {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, "readwrite");
+  const store = tx.objectStore(STORE_NAME);
+  await new Promise((resolve, reject) => {
+    const req = store.add({ ...data, createdAt: Date.now() });
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  db.close();
+}
+
+async function getQueueCount(): Promise<number> {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const count = await new Promise<number>((resolve, reject) => {
+      const req = store.count();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    db.close();
+    return count;
+  } catch {
+    return 0;
+  }
+}
 
 export default function RecorderForm() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [duration, setDuration] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [offlineCount, setOfflineCount] = useState(0);
   const [title, setTitle] = useState("");
   const [language, setLanguage] = useState("cre");
   const [occasion, setOccasion] = useState("");
   const [visibility, setVisibility] = useState("sacred");
   const [speakerName, setSpeakerName] = useState("");
+  const [communityId, setCommunityId] = useState("c8078d97-9ff1-46bb-945d-5baaae20b10c");
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    getQueueCount().then(setOfflineCount);
+    fetch("/api/communities")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.[0]?.id) setCommunityId(data[0].id);
+      })
+      .catch(() => {});
+  }, []);
 
   const startRecording = useCallback(async () => {
     try {
@@ -59,7 +114,7 @@ export default function RecorderForm() {
 
     const formData = new FormData();
     formData.append("audio", audioBlob, "recording.webm");
-    formData.append("community_id", "00000000-0000-0000-0000-000000000000");
+    formData.append("community_id", communityId);
     formData.append("language", language);
     formData.append("title", title);
     formData.append("occasion", occasion);
@@ -80,13 +135,27 @@ export default function RecorderForm() {
       setTitle("");
       setOccasion("");
       setSpeakerName("");
+      setOfflineCount(0);
     } catch (err) {
-      alert("Upload failed. Will retry when online.");
-      console.error(err);
+      // Save to offline queue
+      await queueOffline({
+        blob: audioBlob,
+        form: {
+          community_id: communityId,
+          language,
+          title,
+          occasion,
+          visibility,
+          speaker_name: speakerName,
+        },
+      });
+      const count = await getQueueCount();
+      setOfflineCount(count);
+      alert(`Upload failed. Saved to offline queue (${count} pending).`);
     } finally {
       setUploading(false);
     }
-  }, [audioBlob, language, title, occasion, visibility, speakerName]);
+  }, [audioBlob, language, title, occasion, visibility, speakerName, communityId]);
 
   const fmt = (s: number) => {
     const m = Math.floor(s / 60);
@@ -96,7 +165,21 @@ export default function RecorderForm() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      {/* Record button */}
+      {offlineCount > 0 && (
+        <div
+          style={{
+            background: "var(--color-accent)",
+            color: "#0a0a0a",
+            padding: "0.5rem 0.75rem",
+            borderRadius: "var(--radius)",
+            fontSize: "0.875rem",
+            fontWeight: 500,
+          }}
+        >
+          🔄 {offlineCount} recording(s) queued for sync when online
+        </div>
+      )}
+
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
         <button
           onClick={isRecording ? stopRecording : audioBlob ? upload : startRecording}
@@ -141,81 +224,41 @@ export default function RecorderForm() {
           />
 
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem", fontSize: "0.875rem" }}>
-              Title
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Story of the Caribou"
-                style={{
-                  padding: "0.6rem 0.75rem",
-                  borderRadius: "var(--radius)",
-                  border: "1px solid var(--color-border)",
-                  background: "var(--color-surface-raised)",
-                  color: "inherit",
-                  fontSize: "1rem",
-                }}
-              />
-            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Title — e.g. Story of the Caribou"
+              style={inputStyle}
+            />
 
-            <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem", fontSize: "0.875rem" }}>
-              Language
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                style={{
-                  padding: "0.6rem 0.75rem",
-                  borderRadius: "var(--radius)",
-                  border: "1px solid var(--color-border)",
-                  background: "var(--color-surface-raised)",
-                  color: "inherit",
-                  fontSize: "1rem",
-                }}
-              >
-                <option value="cre">Cree</option>
-                <option value="iku">Inuktitut</option>
-                <option value="oji">Ojibwe</option>
-                <option value="den">Dene</option>
-                <option value="mri">Māori</option>
-              </select>
-            </label>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              style={inputStyle}
+            >
+              <option value="cre">Cree</option>
+              <option value="iku">Inuktitut</option>
+              <option value="oji">Ojibwe</option>
+              <option value="den">Dene</option>
+              <option value="mri">Māori</option>
+            </select>
 
-            <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem", fontSize: "0.875rem" }}>
-              Occasion
-              <input
-                type="text"
-                value={occasion}
-                onChange={(e) => setOccasion(e.target.value)}
-                placeholder="Winter Gathering"
-                style={{
-                  padding: "0.6rem 0.75rem",
-                  borderRadius: "var(--radius)",
-                  border: "1px solid var(--color-border)",
-                  background: "var(--color-surface-raised)",
-                  color: "inherit",
-                  fontSize: "1rem",
-                }}
-              />
-            </label>
+            <input
+              type="text"
+              value={occasion}
+              onChange={(e) => setOccasion(e.target.value)}
+              placeholder="Occasion — e.g. Winter Gathering"
+              style={inputStyle}
+            />
 
-            <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem", fontSize: "0.875rem" }}>
-              Speaker Name
-              <input
-                type="text"
-                value={speakerName}
-                onChange={(e) => setSpeakerName(e.target.value)}
-                placeholder="Elder Mary"
-                style={{
-                  padding: "0.6rem 0.75rem",
-                  borderRadius: "var(--radius)",
-                  border: "1px solid var(--color-border)",
-                  background: "var(--color-surface-raised)",
-                  color: "inherit",
-                  fontSize: "1rem",
-                }}
-              />
-            </label>
+            <input
+              type="text"
+              value={speakerName}
+              onChange={(e) => setSpeakerName(e.target.value)}
+              placeholder="Speaker Name — e.g. Elder Mary"
+              style={inputStyle}
+            />
 
             <div
               style={{
@@ -244,3 +287,13 @@ export default function RecorderForm() {
     </div>
   );
 }
+
+const inputStyle: React.CSSProperties = {
+  padding: "0.6rem 0.75rem",
+  borderRadius: "var(--radius)",
+  border: "1px solid var(--color-border)",
+  background: "var(--color-surface-raised)",
+  color: "inherit",
+  fontSize: "1rem",
+  fontFamily: "inherit",
+};

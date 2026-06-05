@@ -14,26 +14,25 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for demo session or cookie
-    // For MVP: read from localStorage demo user
-    const demoUser = localStorage.getItem("demo_user");
-    if (demoUser) {
-      setUser(JSON.parse(demoUser));
+    const stored = localStorage.getItem("demo_user");
+    if (stored) {
+      try {
+        setUser(JSON.parse(stored));
+      } catch {
+        localStorage.removeItem("demo_user");
+      }
     }
     setLoading(false);
   }, []);
 
-  const login = async (email: string) => {
-    // Demo login — creates a viewer user
-    const demoUser = { id: "demo", email, role: "viewer" };
-    localStorage.setItem("demo_user", JSON.stringify(demoUser));
-    setUser(demoUser);
-  };
+  const getElderKey = () => localStorage.getItem("elder_key") || "";
 
   const logout = () => {
     localStorage.removeItem("demo_user");
+    localStorage.removeItem("elder_key");
     setUser(null);
+    window.location.reload();
   };
 
-  return { user, loading, login, logout };
+  return { user, loading, logout, getElderKey };
 }

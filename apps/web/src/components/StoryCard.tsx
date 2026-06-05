@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface StoryCardProps {
   id: string;
@@ -19,6 +20,15 @@ export default function StoryCard({
   transcript,
   visibility,
 }: StoryCardProps) {
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/recordings/${id}/audio-url`, { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => data && setAudioUrl(data.audio_url))
+      .catch(() => {});
+  }, [id]);
+
   return (
     <Link
       href={`/story/${id}`}
@@ -72,6 +82,15 @@ export default function StoryCard({
           </span>
         )}
       </div>
+
+      {audioUrl && (
+        <audio
+          controls
+          src={audioUrl}
+          style={{ width: "100%", marginBottom: "0.75rem" }}
+          preload="none"
+        />
+      )}
 
       <p
         style={{

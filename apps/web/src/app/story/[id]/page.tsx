@@ -7,16 +7,22 @@ export default function StoryDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const [story, setStory] = useState<any>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/recordings/${id}`)
+    fetch(`/api/recordings/${id}`, { credentials: "include" })
       .then((r) => r.json())
       .then((data) => {
         setStory(data);
         setLoading(false);
       })
       .catch(() => setLoading(false));
+
+    fetch(`/api/recordings/${id}/audio-url`, { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => data && setAudioUrl(data.audio_url))
+      .catch(() => {});
   }, [id]);
 
   if (loading) return <p style={{ padding: "2rem", textAlign: "center" }}>Loading...</p>;
@@ -66,6 +72,15 @@ export default function StoryDetailPage() {
           {story.visibility?.toUpperCase()}
         </span>
       </div>
+
+      {audioUrl && (
+        <audio
+          controls
+          src={audioUrl}
+          style={{ width: "100%", borderRadius: "var(--radius)" }}
+          preload="metadata"
+        />
+      )}
 
       {story.transcript && (
         <div

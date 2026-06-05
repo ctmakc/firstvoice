@@ -4,6 +4,30 @@ import { useState } from "react";
 
 export default function LoginPage() {
   const [elderKey, setElderKey] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/me", {
+        headers: { "X-Elder-Key": elderKey },
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Invalid Elder Key");
+      const user = await res.json();
+      localStorage.setItem("demo_user", JSON.stringify(user));
+      localStorage.setItem("elder_key", elderKey);
+      window.location.href = "/";
+    } catch (err: any) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -19,7 +43,8 @@ export default function LoginPage() {
     >
       <h1 style={{ fontSize: "1.5rem", fontWeight: 600 }}>Sign In</h1>
 
-      <div
+      <form
+        onSubmit={handleSubmit}
         style={{
           background: "var(--color-surface)",
           borderRadius: "var(--radius)",
@@ -41,6 +66,7 @@ export default function LoginPage() {
           value={elderKey}
           onChange={(e) => setElderKey(e.target.value)}
           placeholder="Enter Elder Key"
+          required
           style={{
             padding: "0.6rem 0.75rem",
             borderRadius: "var(--radius)",
@@ -51,7 +77,13 @@ export default function LoginPage() {
           }}
         />
 
+        {error && (
+          <p style={{ color: "var(--color-danger)", fontSize: "0.875rem", margin: 0 }}>{error}</p>
+        )}
+
         <button
+          type="submit"
+          disabled={loading}
           style={{
             padding: "0.75rem",
             borderRadius: "var(--radius)",
@@ -59,13 +91,14 @@ export default function LoginPage() {
             background: "var(--color-accent)",
             color: "#0a0a0a",
             fontWeight: 600,
-            cursor: "pointer",
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.7 : 1,
             fontSize: "1rem",
           }}
         >
-          Continue
+          {loading ? "Signing in..." : "Continue"}
         </button>
-      </div>
+      </form>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 
 const links = [
   { href: "/", label: "Feed", icon: "🏠" },
@@ -11,6 +12,7 @@ const links = [
 
 export default function Nav() {
   const path = usePathname();
+  const { user, logout } = useAuth();
 
   return (
     <nav
@@ -48,6 +50,42 @@ export default function Nav() {
           {l.label}
         </Link>
       ))}
+
+      {user ? (
+        <button
+          onClick={logout}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "0.25rem",
+            fontSize: "0.75rem",
+            color: "var(--color-text-muted)",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          <span style={{ fontSize: "1.25rem" }}>🚪</span>
+          Exit
+        </button>
+      ) : (
+        <Link
+          href="/login"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "0.25rem",
+            fontSize: "0.75rem",
+            color: path === "/login" ? "var(--color-accent)" : "var(--color-text-muted)",
+            textDecoration: "none",
+          }}
+        >
+          <span style={{ fontSize: "1.25rem" }}>🔑</span>
+          Sign In
+        </Link>
+      )}
     </nav>
   );
 }

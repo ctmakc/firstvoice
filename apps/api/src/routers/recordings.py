@@ -6,7 +6,7 @@ from src.models.schemas import RecordingCreate, RecordingRead, RecordingUpdate
 from src.models.db_models import Recording, AuditLog, User
 from src.middleware.auth import get_current_user, get_current_user_optional
 from src.middleware.policy import require_recording_access
-from src.services.storage import upload_audio
+from src.services.storage import upload_audio, get_presigned_url
 from src.config import get_settings
 import uuid
 import json
@@ -116,6 +116,25 @@ async def get_recording(
     recording: Recording = Depends(require_recording_access),
 ):
     return recording
+
+
+@router.get("/{recording_id}/audio-url")
+async def get_audio_url(
+    recording_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    result = await db.execute(select(Recording).where(Recording.id == recording_id))
+    recording = result.scalar_one_or_none()
+    if not recording:
+        raise HTTPException(status_code=404, detail="Recording not found")
+
+    if recording.visibility == "sacred":
+        if not current_user or current_user.community_id != recording.community_id:
+            raise HTTPException(status_code=403, detail="Not authorized")
+
+    url = get_presigned_url(recording.audio_file_key, expiry=3600)
+    return {"audio_url": url}
 
 
 @router.patch("/{recording_id}", response_model=RecordingRead)

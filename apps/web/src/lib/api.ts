@@ -1,12 +1,12 @@
-const API_BASE = process.env.API_URL || "http://localhost:8000/api/v1";
-
 export async function fetchApi(path: string, options?: RequestInit) {
-  const res = await fetch(`${API_BASE}${path}`, {
+  // Relative path — rewrites to backend via Next.js
+  const res = await fetch(`/api${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
       ...options?.headers,
     },
+    credentials: "include",
   });
   if (!res.ok) {
     const err = await res.text();
@@ -26,4 +26,12 @@ export async function listCommunities() {
 export async function listRecordings(params?: { community_id?: string; language?: string }) {
   const qs = new URLSearchParams(params || {}).toString();
   return fetchApi(`/recordings?${qs}`);
+}
+
+export async function getRecording(id: string) {
+  return fetchApi(`/recordings/${id}`);
+}
+
+export async function getAudioUrl(id: string) {
+  return fetchApi(`/recordings/${id}/audio-url`);
 }
