@@ -4,6 +4,19 @@
 >
 > Returning data sovereignty to Indigenous, endangered-language, and displaced communities.
 
+## 🎬 Live Demo
+
+- **Web App:** http://localhost:3001 (local dev)
+- **API Docs:** http://localhost:8001/docs (Swagger UI)
+- **Landing Page:** http://localhost:3001/landing
+
+**Demo Elder Keys** (for login):
+- Cree: `8MnDY-TIm8Lp8uafw1cP1Zj0MFgYDn-spNHa4oAM9nE`
+- Inuktitut: `mRrmXoowyG-bCR2YTGyqVj_SGUC0BrxYgMnoeZs5V7Q`
+- Ojibwe: `2mokRpg7dLSnZ8rHfPJ4HuqK-9hJglJI_NBqxJ5kQmY`
+- Māori: `89IEoGRExfirgUhtnC-vZwHproT-b8piSLFy_mXyPV4`
+- Hawaiian: `RuCqUPEfd7YEk9hEuuf9XN2sxZuQwXlYUFkkn0cL1zY`
+
 ## The Problem
 
 - **40% of the world's ~7,000 languages** are critically endangered
@@ -34,49 +47,85 @@ Sacred  → Encrypted archive, council-controlled access
 Provenance NFT minted (non-transferable Soulbound)
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
 # 1. Clone
 git clone https://github.com/ctmakc/firstvoice.git
 cd firstvoice
 
-# 2. Configure environment
-cp .env.example .env
-# Edit .env with your GEMINI_API_KEY, OAuth credentials, etc.
+# 2. Start infrastructure (Postgres + PostGIS, Redis, MinIO)
+cd infra && docker compose up -d postgres redis minio
 
-# 3. Start everything (Postgres + PostGIS, Redis, MinIO, API, Web, Worker)
-cd infra && docker compose up -d --build
+# 3. Install API dependencies
+cd ../apps/api
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 
-# 4. Run migrations
-cd ../apps/api && alembic upgrade head
+# 4. Configure environment
+cp .env.example .env  # or use the provided .env
+# Edit DATABASE_URL, REDIS_URL, MINIO_* as needed
 
-# 5. Seed demo data
+# 5. Run migrations
+alembic upgrade head
+
+# 6. Seed demo data
 python scripts/seed.py
 
-# 6. Open the app
-open http://localhost:3050        # Web PWA
-open http://localhost:8010/docs   # API docs (Swagger)
+# 7. Start API
+uvicorn src.main:app --host 0.0.0.0 --port 8001 --reload
+
+# 8. In another terminal, start web
+cd ../web
+pnpm install
+pnpm dev --port 3001
+
+# 9. Open the app
+open http://localhost:3001        # Web PWA
+open http://localhost:8001/docs   # API docs (Swagger)
 ```
 
-## Project Structure
+### One-Command Full Stack (Docker)
+
+```bash
+cd infra
+docker compose up -d --build
+# App will be available at http://localhost:3050
+```
+
+## 📁 Project Structure
 
 ```
 firstvoice/
 ├── apps/
-│   ├── api/           # FastAPI backend (AI, Web3, admin, auth)
-│   └── web/           # Next.js 16 PWA frontend
+│   ├── api/              # FastAPI backend (AI, Web3, admin, auth)
+│   │   ├── src/
+│   │   │   ├── main.py           # FastAPI app entry
+│   │   │   ├── routers/          # API endpoints
+│   │   │   ├── models/           # DB models + schemas
+│   │   │   ├── services/         # AI + Web3 + storage
+│   │   │   ├── middleware/       # Auth, rate limit, errors
+│   │   │   └── workers/          # Celery tasks
+│   │   ├── contracts/            # Hardhat + Solidity
+│   │   ├── migrations/           # Alembic
+│   │   └── scripts/seed.py       # Demo data
+│   └── web/              # Next.js 16 PWA frontend
+│       ├── src/
+│       │   ├── app/              # App Router pages
+│       │   ├── components/       # React components
+│       │   └── hooks/            # useAuth, useApi
+│       └── public/               # PWA manifest, service worker
 ├── infra/
-│   └── docker-compose.yml   # One-command local stack
+│   └── docker-compose.yml  # One-command full stack
 ├── docs/
-│   ├── PRD.md         # Product Requirements Document
-│   ├── BUILD.md       # Technical Architecture
-│   └── GRANTS.md      # Grant templates & tracker
-├── contracts/         # Soulbound Provenance NFT (Hardhat + Solidity)
-└── .github/workflows/ # CI/CD
+│   ├── PRD.md              # Product Requirements Document
+│   ├── BUILD.md            # Technical Architecture
+│   └── GRANTS.md           # Grant templates & tracker
+└── .github/workflows/      # CI/CD
 ```
 
-## Target Communities
+## 🌍 Target Communities
 
 | Phase | Region | Languages | Grant Focus |
 |-------|--------|-----------|-------------|
@@ -84,15 +133,17 @@ firstvoice/
 | **2** | 🇳🇿 New Zealand | Te Reo Māori | Te Taura Whiri, Callaghan Innovation |
 | **3** | 🇺🇦 Ukraine | Crimean Tatar, Hutsul | Humanitarian tech, diaspora grants |
 
-## Key Differentiators
+## ✨ Key Differentiators
 
 - 🔒 **Sacred/Public Toggle** — No other platform lets communities gate AI training per-item
 - 🗣️ **AI Voice Companion** — Fine-tuned TTS so the language can "speak" again
 - ⛓️ **Non-speculative Web3** — Soulbound provenance tokens, zero speculation
 - 📜 **OCAP-by-design** — Technical architecture enforces data sovereignty
 - 🎁 **Grant-ready open source** — AGPL, built for institutional funding
+- 📱 **Offline-First PWA** — Record in the bush, sync when back in town
+- 🎙️ **Browser Recorder** — No app install required, works on any phone
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -102,33 +153,37 @@ firstvoice/
 | **Web3** | web3.py + Polygon Amoy (Soulbound ERC-721 provenance) |
 | **Infra** | Docker Compose, Caddy, GitHub Actions CI/CD |
 
-## MVP Status
+## ✅ MVP Status
 
-### ✅ Completed
+### Completed
 - [x] Docker Compose stack (Postgres + PostGIS, Redis, MinIO, API, Web, Celery Worker)
-- [x] Database schema + Alembic migrations + seed script
+- [x] Database schema + Alembic migrations + comprehensive seed script
 - [x] Auth middleware (NextAuth JWT + Elder Key header)
-- [x] Recording upload with MinIO storage
-- [x] Community governance (invite, roles, policy, audit log)
-- [x] Sacred/Public access control enforcement
+- [x] Recording upload with MinIO storage + presigned URLs
+- [x] Community governance (invite, roles: elder/admin/member/superadmin)
+- [x] Sacred/Public/Community-Review access control enforcement
 - [x] AI transcription pipeline (faster-whisper)
 - [x] AI translation + entity extraction (Gemini)
 - [x] TTS scaffold (Coqui XTTS + Piper fallback)
 - [x] Soulbound Provenance NFT contract (Solidity + Hardhat)
 - [x] Web3 minting service (Polygon Amoy relayer)
-- [x] PWA frontend shell with recorder component
+- [x] PWA frontend with offline support (IndexedDB queue + service worker)
+- [x] Browser audio recorder with WebM/Opus format
+- [x] Full frontend pages: Feed, Communities, Community Detail, Recorder, Story Detail, Admin, Login, Landing
+- [x] Admin moderation panel (approve/reject + provenance mint)
+- [x] Audit log for all data changes
 - [x] CI/CD (GitHub Actions: lint, typecheck, test, build)
 - [x] AGPL-3.0 license
 
-### 🚧 In Progress / Next
-- [ ] Full frontend pages (login, feed, recorder, story detail, admin)
-- [ ] Offline sync (IndexedDB + Background Sync API)
-- [ ] i18n (EN / FR)
-- [ ] PWA manifest + service worker
-- [ ] Deploy contract to Polygon Amoy testnet
+### Next Steps
+- [ ] Deploy contract to Polygon Amoy testnet (needs MATIC faucet)
+- [ ] i18n (EN / FR / Indigenous languages)
 - [ ] Integration tests (pytest + Playwright)
+- [ ] Real audio file generation for demo recordings
+- [ ] Stripe billing for premium features
+- [ ] Mobile app (Capacitor / React Native)
 
-## Grant Fit
+## 💰 Grant Fit
 
 | Program | Amount | Fit |
 |---------|--------|-----|
@@ -139,7 +194,7 @@ firstvoice/
 | Gitcoin Grants | $10K–$100K | Open-source public good |
 | Protocol Labs | $10K–$100K | Decentralized knowledge |
 
-## Contributing
+## 🤝 Contributing
 
 We welcome contributors, especially:
 - Indigenous community organizers and language keepers
@@ -149,7 +204,7 @@ We welcome contributors, especially:
 
 See [docs/BUILD.md](docs/BUILD.md) for architecture details and [docs/GRANTS.md](docs/GRANTS.md) for funding strategy.
 
-## Principles
+## 🧭 Principles
 
 1. **Community-first** — Technology serves the community, never extracts from it
 2. **OCAP-by-design** — Ownership, Control, Access, Possession are technical guarantees
@@ -157,7 +212,7 @@ See [docs/BUILD.md](docs/BUILD.md) for architecture details and [docs/GRANTS.md]
 4. **No token speculation** — Governance-only, non-transferable tokens
 5. **Offline-first** — Works in remote communities with intermittent connectivity
 
-## License
+## 📄 License
 
 [AGPL-3.0](LICENSE) — Data sovereignty includes software sovereignty.
 

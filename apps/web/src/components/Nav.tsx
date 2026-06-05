@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const links = [
   { href: "/", label: "Feed", icon: "🏠" },
+  { href: "/communities", label: "Communities", icon: "🌿" },
   { href: "/record", label: "Record", icon: "🎙️" },
   { href: "/admin", label: "Admin", icon: "⚙️" },
 ];

@@ -12,9 +12,13 @@ module.exports = {
     },
   },
   networks: {
+    hardhat: {
+      chainId: 31337,
+    },
     amoy: {
       url: process.env.POLYGON_RPC || "https://rpc-amoy.polygon.technology",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 80002,
     },
   },
 };
