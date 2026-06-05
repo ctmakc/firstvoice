@@ -31,10 +31,27 @@ async def create_recording(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    # Validate file type
+    allowed_types = {"audio/webm", "audio/wav", "audio/mpeg", "audio/mp4", "audio/ogg", "audio/flac"}
+    if audio.content_type and audio.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported audio format: {audio.content_type}. Allowed: {', '.join(allowed_types)}"
+        )
+
+    content = await audio.read()
+
+    # Validate file size
+    max_bytes = settings.max_upload_size_mb * 1024 * 1024
+    if len(content) > max_bytes:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large: {len(content)} bytes. Maximum: {settings.max_upload_size_mb}MB"
+        )
+
     ext = audio.filename.split(".")[-1] if audio.filename and "." in audio.filename else "webm"
     audio_file_key = f"recordings/{community_id}/{uuid.uuid4()}.{ext}"
 
-    content = await audio.read()
     upload_audio(
         audio_file_key,
         io.BytesIO(content),

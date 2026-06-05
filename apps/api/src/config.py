@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     provenance_contract_address: str = ""
     relayer_private_key: str = ""
 
+    rate_limit_per_minute: int = 60
+    max_upload_size_mb: int = 100
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
