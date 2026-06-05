@@ -7,7 +7,7 @@ celery_app = Celery(
     "firstvoice",
     broker=settings.redis_url,
     backend=settings.redis_url,
-    include=["src.workers.transcription"],
+    include=["src.workers.transcription", "src.workers.translation"],
 )
 
 celery_app.conf.update(

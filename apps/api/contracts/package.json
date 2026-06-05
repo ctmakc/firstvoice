@@ -1,0 +1,16 @@
+{
+  "name": "firstvoice-provenance",
+  "version": "1.0.0",
+  "description": "Soulbound Provenance NFT contracts for FirstVoice",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy:amoy": "hardhat run scripts/deploy.js --network amoy"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.19.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.6"
+  }
+}

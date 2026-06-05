@@ -22,8 +22,15 @@ AsyncSessionLocal = async_sessionmaker(
 
 # Sync engine for Alembic / Celery
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 sync_engine = create_engine(settings.sync_database_url, echo=settings.debug)
+
+SyncSessionLocal = sessionmaker(
+    bind=sync_engine,
+    expire_on_commit=False,
+    autoflush=False,
+)
 
 Base = declarative_base()
 

@@ -95,6 +95,8 @@ class RecordingRead(BaseModel):
     occasion: Optional[str]
     transcription_status: str
     provenance_tx_hash: Optional[str]
+    provenance_token_id: Optional[str] = None
+    confidence: Optional[float] = None
     created_at: datetime
 
     class Config:

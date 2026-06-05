@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Integer, Boolean, Text, ForeignKey, JSON
+from sqlalchemy import Column, String, DateTime, Integer, Boolean, Text, ForeignKey, JSON, Float
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from geoalchemy2 import Geography
 from src.database import Base
@@ -60,6 +60,7 @@ class Recording(Base):
     provenance_tx_hash = Column(String(66))
     provenance_token_id = Column(String(100))
     transcription_status = Column(String(20), default="pending")
+    confidence = Column(Float, nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
