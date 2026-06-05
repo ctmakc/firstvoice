@@ -2,15 +2,27 @@
   --color-bg: #0a0a0a;
   --color-surface: #141414;
   --color-surface-raised: #1e1e1e;
+  --color-surface-hover: #262626;
   --color-text: #f0f0f0;
   --color-text-muted: #999;
+  --color-text-dim: #666;
   --color-accent: #d4a853;
   --color-accent-hover: #c49a4b;
+  --color-accent-glow: rgba(212, 168, 83, 0.15);
   --color-border: #2a2a2a;
+  --color-border-focus: #d4a853;
   --color-danger: #c44;
+  --color-danger-soft: rgba(204, 68, 68, 0.1);
   --color-success: #3a3;
-  --font-body: "Inter", system-ui, sans-serif;
+  --color-success-soft: rgba(51, 170, 51, 0.1);
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
   --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 20px rgba(212, 168, 83, 0.08);
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
 }
 
 * {
@@ -23,6 +35,7 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -30,15 +43,17 @@ body {
   color: var(--color-text);
   font-family: var(--font-body);
   line-height: 1.6;
+  min-height: 100dvh;
 }
 
 a {
   color: var(--color-accent);
   text-decoration: none;
+  transition: opacity var(--transition-fast);
 }
 
 a:hover {
-  text-decoration: underline;
+  opacity: 0.85;
 }
 
 button {
@@ -47,14 +62,65 @@ button {
   border: none;
   background: none;
   color: inherit;
+  transition: all var(--transition-fast);
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.75rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  outline: none;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--color-text-dim);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+
+input::placeholder {
+  color: var(--color-text-dim);
 }
 
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+  border-radius: 2px;
 }
 
-/* Utility */
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-dim);
+}
+
+/* Utility classes */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -65,4 +131,53 @@ button {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.loading-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface) 25%,
+    var(--color-surface-raised) 50%,
+    var(--color-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton 1.5s ease infinite;
+  border-radius: var(--radius);
+}
+
+@keyframes skeleton {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

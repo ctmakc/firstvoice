@@ -45,6 +45,12 @@ async function getQueueCount(): Promise<number> {
   }
 }
 
+function formatTime(s: number) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
 export default function RecorderForm() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -56,7 +62,8 @@ export default function RecorderForm() {
   const [occasion, setOccasion] = useState("");
   const [visibility, setVisibility] = useState("sacred");
   const [speakerName, setSpeakerName] = useState("");
-  const [communityId, setCommunityId] = useState("c8078d97-9ff1-46bb-945d-5baaae20b10c");
+  const [communityId, setCommunityId] = useState("");
+  const [recordingError, setRecordingError] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -73,6 +80,7 @@ export default function RecorderForm() {
   }, []);
 
   const startRecording = useCallback(async () => {
+    setRecordingError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
@@ -89,6 +97,10 @@ export default function RecorderForm() {
         setAudioBlob(blob);
         stream.getTracks().forEach((t) => t.stop());
       };
+      recorder.onerror = () => {
+        setRecordingError("Recording error. Please try again.");
+        setIsRecording(false);
+      };
 
       recorder.start(1000);
       mediaRecorderRef.current = recorder;
@@ -96,7 +108,7 @@ export default function RecorderForm() {
       setDuration(0);
       timerRef.current = setInterval(() => setDuration((d) => d + 1), 1000);
     } catch {
-      alert("Microphone access denied.");
+      setRecordingError("Microphone access denied. Please allow microphone access and try again.");
     }
   }, []);
 
@@ -108,9 +120,19 @@ export default function RecorderForm() {
     setIsRecording(false);
   }, []);
 
+  const resetForm = useCallback(() => {
+    setAudioBlob(null);
+    setDuration(0);
+    setTitle("");
+    setOccasion("");
+    setSpeakerName("");
+    setRecordingError(null);
+  }, []);
+
   const upload = useCallback(async () => {
-    if (!audioBlob) return;
+    if (!audioBlob || !communityId) return;
     setUploading(true);
+    setRecordingError(null);
 
     const formData = new FormData();
     formData.append("audio", audioBlob, "recording.webm");
@@ -129,15 +151,10 @@ export default function RecorderForm() {
       });
       if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
       const data = await res.json();
-      alert(`Uploaded! Recording ID: ${data.id}`);
-      setAudioBlob(null);
-      setDuration(0);
-      setTitle("");
-      setOccasion("");
-      setSpeakerName("");
+      alert(`✅ Uploaded! Recording ID: ${data.id}`);
+      resetForm();
       setOfflineCount(0);
     } catch (err) {
-      // Save to offline queue
       await queueOffline({
         blob: audioBlob,
         form: {
@@ -151,39 +168,52 @@ export default function RecorderForm() {
       });
       const count = await getQueueCount();
       setOfflineCount(count);
-      alert(`Upload failed. Saved to offline queue (${count} pending).`);
+      setRecordingError(`Upload failed. Saved to offline queue (${count} pending). Will retry when online.`);
     } finally {
       setUploading(false);
     }
-  }, [audioBlob, language, title, occasion, visibility, speakerName, communityId]);
-
-  const fmt = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${sec.toString().padStart(2, "0")}`;
-  };
+  }, [audioBlob, language, title, occasion, visibility, speakerName, communityId, resetForm]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       {offlineCount > 0 && (
         <div
           style={{
-            background: "var(--color-accent)",
-            color: "#0a0a0a",
-            padding: "0.5rem 0.75rem",
+            background: "var(--color-accent-glow)",
+            border: "1px solid var(--color-accent)",
+            color: "var(--color-accent)",
+            padding: "0.75rem 1rem",
             borderRadius: "var(--radius)",
             fontSize: "0.875rem",
             fontWeight: 500,
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
           }}
         >
-          🔄 {offlineCount} recording(s) queued for sync when online
+          🔄 {offlineCount} recording{offlineCount > 1 ? "s" : ""} queued for sync when online
+        </div>
+      )}
+
+      {recordingError && (
+        <div
+          style={{
+            background: "var(--color-danger-soft)",
+            border: "1px solid var(--color-danger)",
+            color: "var(--color-danger)",
+            padding: "0.75rem 1rem",
+            borderRadius: "var(--radius)",
+            fontSize: "0.875rem",
+          }}
+        >
+          ⚠️ {recordingError}
         </div>
       )}
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
         <button
           onClick={isRecording ? stopRecording : audioBlob ? upload : startRecording}
-          disabled={uploading}
+          disabled={uploading || !communityId}
           style={{
             width: 120,
             height: 120,
@@ -199,18 +229,22 @@ export default function RecorderForm() {
               : "var(--color-accent)",
             color: "#fff",
             fontSize: "2rem",
-            cursor: uploading ? "not-allowed" : "pointer",
-            opacity: uploading ? 0.6 : 1,
-            transition: "background 0.2s",
+            cursor: uploading || !communityId ? "not-allowed" : "pointer",
+            opacity: uploading || !communityId ? 0.6 : 1,
+            transition: "all var(--transition-fast)",
+            boxShadow: isRecording ? "0 0 20px rgba(204,68,68,0.3)" : "var(--shadow-sm)",
+            animation: isRecording ? "pulse 2s infinite" : "none",
           }}
         >
           {isRecording ? "⏹" : audioBlob ? "⬆" : "🎙"}
         </button>
-        <div style={{ fontVariantNumeric: "tabular-nums", fontSize: "1.1rem" }}>
+        <div style={{ fontVariantNumeric: "tabular-nums", fontSize: "1.1rem", fontWeight: 500 }}>
           {isRecording
-            ? `Recording… ${fmt(duration)}`
+            ? `Recording… ${formatTime(duration)}`
             : audioBlob
-            ? `Ready: ${fmt(duration)}`
+            ? `Ready: ${formatTime(duration)}`
+            : !communityId
+            ? "Loading community..."
             : "Tap to record"}
         </div>
       </div>
@@ -263,9 +297,9 @@ export default function RecorderForm() {
             <div
               style={{
                 display: "flex",
-                gap: "0.5rem",
+                gap: "0.75rem",
                 alignItems: "center",
-                padding: "0.75rem",
+                padding: "0.875rem",
                 borderRadius: "var(--radius)",
                 border: "1px solid var(--color-border)",
                 background: "var(--color-surface-raised)",
@@ -276,11 +310,32 @@ export default function RecorderForm() {
                 id="public-toggle"
                 checked={visibility === "public"}
                 onChange={(e) => setVisibility(e.target.checked ? "public" : "sacred")}
+                style={{ width: "auto", cursor: "pointer" }}
               />
-              <label htmlFor="public-toggle" style={{ fontSize: "0.875rem", cursor: "pointer" }}>
-                Make Public (unchecked = Sacred)
+              <label
+                htmlFor="public-toggle"
+                style={{ fontSize: "0.875rem", cursor: "pointer", userSelect: "none" }}
+              >
+                Make Public{" "}
+                <span style={{ color: "var(--color-text-dim)" }}>(unchecked = Sacred)</span>
               </label>
             </div>
+
+            <button
+              onClick={resetForm}
+              disabled={uploading}
+              style={{
+                padding: "0.6rem",
+                borderRadius: "var(--radius)",
+                border: "1px solid var(--color-border)",
+                background: "transparent",
+                color: "var(--color-text-muted)",
+                fontSize: "0.875rem",
+                cursor: "pointer",
+              }}
+            >
+              🗑 Discard & Record New
+            </button>
           </div>
         </>
       )}
@@ -289,11 +344,12 @@ export default function RecorderForm() {
 }
 
 const inputStyle: React.CSSProperties = {
-  padding: "0.6rem 0.75rem",
+  padding: "0.7rem 0.875rem",
   borderRadius: "var(--radius)",
   border: "1px solid var(--color-border)",
   background: "var(--color-surface-raised)",
   color: "inherit",
   fontSize: "1rem",
   fontFamily: "inherit",
+  width: "100%",
 };

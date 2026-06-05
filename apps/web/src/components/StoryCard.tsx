@@ -21,6 +21,7 @@ export default function StoryCard({
   visibility,
 }: StoryCardProps) {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     fetch(`/api/recordings/${id}/audio-url`, { credentials: "include" })
@@ -35,19 +36,17 @@ export default function StoryCard({
       style={{
         display: "block",
         background: "var(--color-surface)",
-        borderRadius: "var(--radius)",
-        padding: "1.25rem",
+        borderRadius: "var(--radius-lg)",
+        padding: "1.5rem",
         border: "1px solid var(--color-border)",
         textDecoration: "none",
         color: "inherit",
-        transition: "border-color 0.15s",
+        transition: "border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast)",
+        transform: isHovered ? "translateY(-2px)" : "translateY(0)",
+        boxShadow: isHovered ? "var(--shadow-md)" : "none",
       }}
-      onMouseEnter={(e) =>
-        (e.currentTarget.style.borderColor = "var(--color-accent)")
-      }
-      onMouseLeave={(e) =>
-        (e.currentTarget.style.borderColor = "var(--color-border)")
-      }
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <div
         style={{
@@ -55,6 +54,7 @@ export default function StoryCard({
           justifyContent: "space-between",
           alignItems: "flex-start",
           marginBottom: "0.75rem",
+          gap: "0.75rem",
         }}
       >
         <h3
@@ -63,6 +63,11 @@ export default function StoryCard({
             fontWeight: 600,
             lineHeight: 1.3,
             margin: 0,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
           }}
         >
           {title || "Untitled Story"}
@@ -70,15 +75,18 @@ export default function StoryCard({
         {visibility === "sacred" && (
           <span
             style={{
-              fontSize: "0.7rem",
-              background: "var(--color-danger)",
-              color: "#fff",
-              padding: "0.15rem 0.4rem",
+              fontSize: "0.65rem",
+              background: "var(--color-danger-soft)",
+              color: "var(--color-danger)",
+              padding: "0.2rem 0.5rem",
               borderRadius: 4,
-              fontWeight: 600,
+              fontWeight: 700,
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+              flexShrink: 0,
             }}
           >
-            SACRED
+            Sacred
           </span>
         )}
       </div>
@@ -87,8 +95,9 @@ export default function StoryCard({
         <audio
           controls
           src={audioUrl}
-          style={{ width: "100%", marginBottom: "0.75rem" }}
+          style={{ width: "100%", marginBottom: "0.75rem", borderRadius: "var(--radius)" }}
           preload="none"
+          onClick={(e) => e.stopPropagation()}
         />
       )}
 
@@ -96,7 +105,7 @@ export default function StoryCard({
         style={{
           fontSize: "0.875rem",
           color: "var(--color-text-muted)",
-          lineHeight: 1.5,
+          lineHeight: 1.6,
           margin: "0 0 0.75rem",
           display: "-webkit-box",
           WebkitLineClamp: 3,
@@ -104,13 +113,14 @@ export default function StoryCard({
           overflow: "hidden",
         }}
       >
-        {transcript || "No transcript available."}
+        {transcript || "No transcript available yet. The AI is processing..."}
       </p>
 
       <div
         style={{
           display: "flex",
           gap: "0.75rem",
+          flexWrap: "wrap",
           fontSize: "0.75rem",
           color: "var(--color-text-muted)",
         }}
@@ -121,12 +131,13 @@ export default function StoryCard({
               background: "var(--color-surface-raised)",
               padding: "0.2rem 0.5rem",
               borderRadius: 4,
+              border: "1px solid var(--color-border)",
             }}
           >
             {language.toUpperCase()}
           </span>
         )}
-        {speaker && <span>Speaker: {speaker}</span>}
+        {speaker && <span>🎙 {speaker}</span>}
       </div>
     </Link>
   );
