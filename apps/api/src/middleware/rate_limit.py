@@ -25,7 +25,14 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if request.url.path in ("/", "/health", "/docs", "/redoc", "/openapi.json"):
             return await call_next(request)
 
-        client_ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown")
+        # X-Forwarded-For may be a comma-separated list and is client-spoofable.
+        # Trust only the entry appended by our reverse proxy (the right-most one);
+        # never key on the raw header or an attacker gets a fresh bucket per request.
+        forwarded = request.headers.get("x-forwarded-for")
+        if forwarded:
+            client_ip = forwarded.split(",")[-1].strip()
+        else:
+            client_ip = request.client.host if request.client else "unknown"
         if client_ip == "unknown":
             return await call_next(request)
 

@@ -2,10 +2,12 @@ import hashlib
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from src.database import get_db
+from src.middleware.auth import get_current_user
 from src.models.db_models import Recording, User, AuditLog, Community
 from src.services.provenance import mint_provenance, get_provenance
 from src.services.storage import download_audio
@@ -17,23 +19,21 @@ def _sha256_bytes(data: bytes) -> str:
     return "0x" + hashlib.sha256(data).hexdigest()
 
 
-async def _require_elder_or_admin(user_id: uuid.UUID, db: AsyncSession) -> User:
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
-    if not user or user.role not in ("elder", "admin", "superadmin"):
-        raise HTTPException(status_code=403, detail="Only elders and admins can mint provenance")
-    return user
+class MintRequest(BaseModel):
+    recording_id: uuid.UUID
 
 
 @router.post("/mint")
 async def mint_provenance_endpoint(
-    recording_id: uuid.UUID,
-    user_id: uuid.UUID,
+    data: MintRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Mint a Soulbound Provenance NFT for a recording."""
-    user = await _require_elder_or_admin(user_id, db)
+    if current_user.role not in ("elder", "admin", "superadmin"):
+        raise HTTPException(status_code=403, detail="Only elders and admins can mint provenance")
 
+    recording_id = data.recording_id
     result = await db.execute(select(Recording).where(Recording.id == recording_id))
     recording = result.scalar_one_or_none()
     if not recording:
@@ -75,7 +75,7 @@ async def mint_provenance_endpoint(
     audit = AuditLog(
         id=uuid.uuid4(),
         recording_id=recording.id,
-        user_id=user_id,
+        user_id=current_user.id,
         action="mint_provenance",
         new_value={"tx_hash": tx_hash, "token_id": token_id, "content_hash": content_hash},
     )

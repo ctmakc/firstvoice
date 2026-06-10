@@ -38,4 +38,10 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    if settings.app_env == "production" and settings.nextauth_secret.startswith("change-me"):
+        raise RuntimeError(
+            "NEXTAUTH_SECRET is still the insecure placeholder. "
+            "Set a strong NEXTAUTH_SECRET before running in production."
+        )
+    return settings

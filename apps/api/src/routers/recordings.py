@@ -137,19 +137,8 @@ async def get_recording(
 
 @router.get("/{recording_id}/audio-url")
 async def get_audio_url(
-    recording_id: uuid.UUID,
-    db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    recording: Recording = Depends(require_recording_access),
 ):
-    result = await db.execute(select(Recording).where(Recording.id == recording_id))
-    recording = result.scalar_one_or_none()
-    if not recording:
-        raise HTTPException(status_code=404, detail="Recording not found")
-
-    if recording.visibility == "sacred":
-        if not current_user or current_user.community_id != recording.community_id:
-            raise HTTPException(status_code=403, detail="Not authorized")
-
     url = get_presigned_url(recording.audio_file_key, expiry=3600)
     return {"audio_url": url}
 

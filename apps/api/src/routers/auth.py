@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import get_db
 from src.models.schemas import UserCreate, UserRead
 from src.models.db_models import User
+from src.middleware.auth import get_current_user
 from sqlalchemy import select
 import uuid
 
@@ -32,7 +33,9 @@ async def oauth_callback(
             id=uuid.uuid4(),
             email=data.email,
             name=data.name,
-            role=data.role,
+            # Never trust a client-supplied role: new users always start as
+            # viewers. Role changes happen only through authenticated admin paths.
+            role="viewer",
             oauth_provider=data.oauth_provider,
             oauth_id=data.oauth_id,
         )
@@ -45,27 +48,10 @@ async def oauth_callback(
 
 @router.get("/me", response_model=UserRead)
 async def get_me(
-    request: Request,
-    email: str = "",
-    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    """Get current user. Supports email query param or X-Elder-Key header."""
-    elder_key = request.headers.get("X-Elder-Key")
-    if elder_key:
-        result = await db.execute(select(User).where(User.elder_key_token == elder_key))
-        user = result.scalar_one_or_none()
-        if not user:
-            raise HTTPException(status_code=401, detail="Invalid Elder Key")
-        return user
-
-    if email:
-        result = await db.execute(select(User).where(User.email == email))
-        user = result.scalar_one_or_none()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        return user
-
-    raise HTTPException(status_code=401, detail="Authentication required")
+    """Get the current user, resolved from the session cookie or X-Elder-Key."""
+    return current_user
 
 
 @router.post("/elder-key")
@@ -73,8 +59,18 @@ async def generate_elder_key(
     user_id: uuid.UUID,
     community_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    """Generate an opaque Elder Key for community council members."""
+    """Generate an opaque Elder Key for community council members.
+
+    Only admins may issue Elder Keys, and only for their own community
+    (superadmins may issue for any community).
+    """
+    if current_user.role not in ("admin", "superadmin"):
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    if current_user.role != "superadmin" and current_user.community_id != community_id:
+        raise HTTPException(status_code=403, detail="Not authorized for this community")
+
     import secrets
     token = secrets.token_urlsafe(32)
 
