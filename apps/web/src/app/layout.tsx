@@ -2,7 +2,10 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Nav from "@/components/Nav";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "FirstVoice — Community-Controlled Heritage",
   description:
     "AI-native digital heritage platform returning data sovereignty to Indigenous and endangered-language communities.",
@@ -22,7 +25,7 @@ export const metadata: Metadata = {
     title: "FirstVoice — Community-Controlled Digital Heritage",
     description:
       "AI speech technology + Web3 provenance + Sacred governance. Returning data sovereignty to Indigenous communities.",
-    url: "https://national-introductory-customs-started.trycloudflare.com",
+    url: siteUrl,
     siteName: "FirstVoice",
     images: [
       {
@@ -57,14 +60,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://national-introductory-customs-started.trycloudflare.com",
-    languages: {
-      "en-US": "https://national-introductory-customs-started.trycloudflare.com",
-      "mi-NZ": "https://national-introductory-customs-started.trycloudflare.com",
-    },
-  },
-  verification: {
-    google: "YOUR_GOOGLE_SITE_VERIFICATION",
+    canonical: siteUrl,
   },
 };
 
