@@ -74,6 +74,7 @@ services:
       NEXTAUTH_SECRET: change-me-in-production-32-char-secret
       NEXTAUTH_URL: http://localhost:3050
       NEXT_PUBLIC_API_URL: http://localhost:8010
+      API_URL: http://api:8000
     ports:
       - "3050:3000"
     depends_on:
@@ -81,7 +82,7 @@ services:
     volumes:
       - ../apps/web/src:/app/src
       - ../apps/web/public:/app/public
-    command: pnpm dev
+    command: npm run dev
 
   worker:
     build: ../apps/api

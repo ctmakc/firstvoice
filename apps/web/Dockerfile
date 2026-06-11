@@ -2,14 +2,14 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Create non-root user for security
-RUN adduser -D -u 1000 appuser && chown -R appuser:appuser /app
-USER appuser
+# Use existing 'node' user (uid 1000) instead of creating a new one
+RUN chown -R node:node /app
+USER node
 
-COPY --chown=appuser:appuser package.json ./
+COPY --chown=node:node package.json ./
 RUN npm install --legacy-peer-deps
 
-COPY --chown=appuser:appuser . .
+COPY --chown=node:node . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=development

@@ -54,12 +54,12 @@ app.add_middleware(
 )
 
 # Routers
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
-app.include_router(communities.router, prefix="/api/v1/communities", tags=["Communities"])
-app.include_router(recordings.router, prefix="/api/v1/recordings", tags=["Recordings"])
-app.include_router(transcription.router, prefix="/api/v1/transcription", tags=["Transcription"])
-app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
-app.include_router(provenance.router, prefix="/api/v1/provenance", tags=["Provenance"])
+app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
+app.include_router(communities.router, prefix="/api/communities", tags=["Communities"])
+app.include_router(recordings.router, prefix="/api/recordings", tags=["Recordings"])
+app.include_router(transcription.router, prefix="/api/transcription", tags=["Transcription"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+app.include_router(provenance.router, prefix="/api/provenance", tags=["Provenance"])
 
 
 @app.get("/health")
